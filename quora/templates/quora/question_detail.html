@@ -1,0 +1,77 @@
+{% extends "quora/base.html" %}
+{% block content %}
+
+<article class="media content-section">
+    <img class="rounded-circle article-img" src="{{ question.author.profile.user_image.url }}"
+        alt="{{ question.author.username }}">
+
+    <div class="media-body">
+        <div class="article-metadata">
+            <a class="mr-2" href="{% url 'user-questions' question.author.username %}">{{ question.author }}</a>
+            <small class="text-muted">{{ question.date_posted }}</small>
+            {% if question.author == user %}
+            <div>
+                <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'question-update' question.id %}">Update
+                    Question</a>
+                <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'question-delete' question.id %}">Delete
+                    Question</a>
+            </div>
+            {% endif %}
+        </div>
+        <h2 class="article-title">{{ question.title }}</h2>
+        <p class="article-content">{{ question.content }}</p>
+    </div>
+</article>
+
+<!-- Answer Section -->
+{% if user.is_authenticated %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Answer this question</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'question-answer' question.pk %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <textarea class="form-control" rows="4" name="content" placeholder="Your answer here..."></textarea>
+            </div><br>
+            <button type="submit" class="btn btn-primary">Submit Answer</button>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info mt-3">
+    Please <a href="{% url 'login' %}?next={{ request.path }}">login</a> to answer the question.
+</div>
+{% endif %}
+
+<!-- Answer List -->
+{% if question.answers.all %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Answers</h5>
+    </div>
+    <div class="card-body">
+        {% for answer in question.answers.all %}
+        <div class="media mb-4">
+            <img class="rounded-circle article-img mr-3" src="{{ answer.author.profile.user_image.url }}"
+                alt="{{ answer.author.username }}">
+            <div class="media-body">
+                <h6 class="mt-0">{{ answer.author }}</h6>
+                <p>{{ answer.content }}</p>
+                <span class="ml-2">Likes: {{ answer.likes.count }}</span>
+                {% if user.is_authenticated %}
+                {% if answer.id in liked_answers %}
+                <a href="{% url 'answer-like' answer.pk %}" class="btn btn-sm btn-outline-primary">Unlike</a>
+                {% else %}
+                <a href="{% url 'answer-like' answer.pk %}" class="btn btn-sm btn-outline-primary">Like</a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
