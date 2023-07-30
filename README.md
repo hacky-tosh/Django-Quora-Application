@@ -1,4 +1,4 @@
-# TransportSimple-Quora-Application
+# Django-Quora-Application
 
 ## Features
 
